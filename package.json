@@ -1,0 +1,57 @@
+{
+  "name": "smart-agent-workflow-mcp",
+  "version": "0.1.0",
+  "description": "The only MCP that enforces tests before merge. Full-cycle development automation with testing gates and knowledge graph memory.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "smart-agent-workflow-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vjrivmon/smart-agent-workflow-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "git-worktree",
+    "testing",
+    "e2e",
+    "playwright",
+    "ci-cd",
+    "automation",
+    "claude",
+    "ai-agent",
+    "knowledge-graph",
+    "memory"
+  ],
+  "author": "Vicente Rivas Monferrer <vjrivmon@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vjrivmon/smart-agent-workflow-mcp/issues"
+  },
+  "homepage": "https://github.com/vjrivmon/smart-agent-workflow-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.1",
+    "zod": "^4.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  }
+}
