@@ -183,7 +183,8 @@ export async function listWorktrees(cwd?: string): Promise<WorktreeInfo[]> {
  */
 export async function cleanupWorktree(
   worktreePath: string,
-  force: boolean = false
+  force: boolean = false,
+  commitMessage?: string
 ): Promise<{ merged: boolean; commit?: string }> {
   // Read metadata
   const metadataPath = path.join(worktreePath, METADATA_FILE);
@@ -205,8 +206,9 @@ export async function cleanupWorktree(
   await gitExec(`pull origin ${base_branch}`, projectRoot).catch(() => {});
 
   // Merge the worktree branch
+  const mergeMessage = commitMessage || `feat: merge ${branch_name}`;
   try {
-    await gitExec(`merge ${branch_name} --no-ff -m "feat: merge ${branch_name}"`, projectRoot);
+    await gitExec(`merge ${branch_name} --no-ff -m "${mergeMessage}"`, projectRoot);
   } catch (error) {
     if (!force) {
       throw new Error(`Merge conflict detected. Resolve conflicts manually or use force=true to abort.`);

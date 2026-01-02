@@ -25,11 +25,30 @@ export interface CreateWorktreeResult {
   message: string;
 }
 
+export interface GateStatus {
+  tests_passed: boolean;
+  build_passed: boolean;
+  gate_passed: boolean;
+  test_results: {
+    success: boolean;
+    passed: number;
+    failed: number;
+    timestamp: string;
+  } | null;
+  build_results: {
+    success: boolean;
+    exit_code: number;
+    timestamp: string;
+  } | null;
+  message: string;
+}
+
 export interface CleanupWorktreeResult {
   success: boolean;
   merged: boolean;
   commit?: string;
   message: string;
+  gate_status?: GateStatus;
 }
 
 export interface AbortWorktreeResult {

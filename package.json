@@ -1,7 +1,7 @@
 {
   "name": "smart-agent-workflow-mcp",
-  "version": "0.1.0",
-  "description": "The only MCP that enforces tests before merge. Full-cycle development automation with testing gates and knowledge graph memory.",
+  "version": "0.3.0",
+  "description": "The only MCP that enforces tests before merge. Full-cycle development automation with testing gates, workflow orchestration, and knowledge graph memory.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -30,6 +30,8 @@
     "playwright",
     "ci-cd",
     "automation",
+    "workflow",
+    "state-machine",
     "claude",
     "ai-agent",
     "knowledge-graph",
