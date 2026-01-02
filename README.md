@@ -118,12 +118,43 @@ Use abort_worktree with worktree_path="/path/to/worktree" and reason="Requiremen
 
 | Version | Features |
 |---------|----------|
-| ✅ v0.1.0 | Worktree management (current) |
-| 🔜 v0.2.0 | Testing integration (Playwright, build verification) |
-| 🔜 v0.3.0 | Full workflow (start_feature, complete_feature, rollback) |
-| 🔜 v0.4.0 | Documentation (auto-update CLAUDE.md, reports) |
-| 🔜 v0.5.0 | Memory (knowledge graph, context persistence) |
+| ✅ v0.1.0 | Worktree management |
+| ✅ v0.2.0 | Testing integration (Playwright, build verification) |
+| ✅ v0.3.0 | Full workflow (start_feature, complete_feature, rollback) |
+| ✅ v0.4.0 | Documentation (auto-update CLAUDE.md, reports) |
+| ✅ v0.5.0 | Memory (knowledge graph, context persistence) |
+| ✅ v0.6.0 | Context Health (statusline, auto-checkpoint) (current) |
 | 🔜 v1.0.0 | Production ready |
+
+## Context Health (v0.6.0)
+
+Smart Agent Workflow now tracks context health to anticipate compaction:
+
+### Get Health Status
+
+```
+Use get_context_health
+```
+
+Returns health score (0-100), status (good/warning/critical), and recommendations.
+
+### Manual Checkpoint
+
+```
+Use checkpoint_context with message="Before major refactor"
+```
+
+Saves current workflow state and resets health to 100%.
+
+### Statusline Integration
+
+Add to your Claude Code settings:
+
+```bash
+claude config set -g statusLine '{"type":"command","command":"npx smart-agent-workflow-mcp --statusline"}'
+```
+
+Shows: `Phase: testing | Feature: auth | Progress: 4/8 | Health: 75%`
 
 ## Development
 

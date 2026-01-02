@@ -1,13 +1,15 @@
 /**
- * start_feature Tool - Smart Agent Workflow MCP v0.3.0
+ * start_feature Tool - Smart Agent Workflow MCP v0.6.0
  *
  * Starts a new feature with full workflow:
  * - Creates ephemeral worktree
  * - Sets up environment
  * - Initializes workflow tracking
+ * - Tracks context health
  */
 
 import { createWorktree } from '../../lib/git.js';
+import { trackOperation, resetSession } from '../../lib/context-health.js';
 import { createWorkflow } from './state-machine.js';
 import type { StartFeatureArgs, WorkflowResult, FeatureType } from './types.js';
 
@@ -52,6 +54,10 @@ export async function startFeature(args: StartFeatureArgs): Promise<WorkflowResu
   } = args;
 
   try {
+    // Track operation and reset session for new workflow
+    await trackOperation('start_feature', 500);
+    await resetSession();
+
     // Step 1: Create worktree
     const worktreeInfo = await createWorktree(feature_name, base_branch);
 

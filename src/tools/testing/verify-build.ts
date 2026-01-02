@@ -3,12 +3,14 @@
  *
  * This tool runs npm build and validates the output.
  * Build MUST succeed before any merge operation is allowed.
+ * Tracks context health (v0.6.0).
  */
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { trackOperation } from '../../lib/context-health.js';
 
 const execAsync = promisify(exec);
 
@@ -38,6 +40,9 @@ export async function verifyBuild(params: VerifyBuildParams): Promise<BuildResul
     script = 'build',
     timeout = 300000, // 5 minutes default
   } = params;
+
+  // Track operation (builds generate substantial output)
+  await trackOperation('verify_build', 1000);
 
   // Validate worktree path exists
   if (!existsSync(worktree_path)) {

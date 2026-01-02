@@ -1,16 +1,18 @@
 /**
- * complete_feature Tool - Smart Agent Workflow MCP v0.3.0
+ * complete_feature Tool - Smart Agent Workflow MCP v0.6.0
  *
  * Completes a feature with the full workflow:
  * 1. Run E2E tests (MUST pass)
  * 2. Verify build (MUST pass)
  * 3. Merge to main
  * 4. Cleanup worktree
+ * 5. Auto-checkpoint context
  *
  * BLOCKS if tests or build fail.
  */
 
 import { cleanupWorktree } from '../../lib/git.js';
+import { trackOperation, shouldCheckpoint, getMetrics, resetSession } from '../../lib/context-health.js';
 import { runE2ETests } from '../testing/run-tests.js';
 import { verifyBuild } from '../testing/verify-build.js';
 import { saveContext } from '../memory/save-context.js';
@@ -52,6 +54,9 @@ export const completeFeatureDefinition = {
 
 export async function completeFeature(args: CompleteFeatureArgs): Promise<WorkflowResult> {
   const { worktree_path, commit_message, skip_tests = false } = args;
+
+  // Track operation (high token cost - this is a major operation)
+  await trackOperation('complete_feature', 2000);
 
   // Get workflow
   let workflow = await getWorkflowByPath(worktree_path);
@@ -207,6 +212,14 @@ export async function completeFeature(args: CompleteFeatureArgs): Promise<Workfl
       console.error('[memory] Failed to save context:', memoryError);
     }
 
+    // === AUTO-CHECKPOINT (v0.6.0) ===
+    let checkpointMessage = '';
+    if (await shouldCheckpoint()) {
+      const metrics = await getMetrics();
+      await resetSession();
+      checkpointMessage = `\n[context] Auto-checkpoint saved. Health restored: ${metrics.health_score}% → 100%`;
+    }
+
     // Clear current workflow
     await clearCurrentWorkflow();
 
@@ -214,7 +227,7 @@ export async function completeFeature(args: CompleteFeatureArgs): Promise<Workfl
       success: true,
       workflow_id: workflow.id,
       phase: 'completed',
-      message: `Feature "${workflow.feature_name}" completed successfully!`,
+      message: `Feature "${workflow.feature_name}" completed successfully!${checkpointMessage}`,
       branch_name: workflow.branch_name,
       next_action:
         'Feature merged to main. Run `git pull` to update your local main branch. ' +

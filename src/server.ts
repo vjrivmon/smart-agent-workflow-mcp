@@ -75,6 +75,14 @@ import {
   getMemoryDefinition,
 } from './tools/memory/index.js';
 
+// Context tools (v0.6.0)
+import {
+  checkpointContext,
+  checkpointContextDefinition,
+  getContextHealth,
+  getContextHealthDefinition,
+} from './tools/context/index.js';
+
 // Resources
 import {
   worktreeStatusResource,
@@ -87,12 +95,14 @@ import {
   getProjectDocsResource,
   memoryKnowledgeResource,
   getMemoryKnowledgeResource,
+  statuslineWorkflowResource,
+  getStatuslineWorkflowResource,
 } from './resources/index.js';
 
 const server = new Server(
   {
     name: 'smart-agent-workflow-mcp',
-    version: '0.5.0',
+    version: '0.6.0',
   },
   {
     capabilities: {
@@ -129,6 +139,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       saveContextDefinition,
       restoreContextDefinition,
       getMemoryDefinition,
+      // Context health (v0.6.0)
+      checkpointContextDefinition,
+      getContextHealthDefinition,
     ],
   };
 });
@@ -467,6 +480,39 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      // === CONTEXT TOOLS (v0.6.0) ===
+      case 'checkpoint_context': {
+        const result = await checkpointContext({
+          message: args?.message as string | undefined,
+          tags: args?.tags as string[] | undefined,
+          force: args?.force as boolean | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'get_context_health': {
+        const result = await getContextHealth({
+          include_log: args?.include_log as boolean | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -493,6 +539,7 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
       workflowCurrentResource,
       projectDocsResource,
       memoryKnowledgeResource,
+      statuslineWorkflowResource,
     ],
   };
 });
@@ -567,6 +614,19 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
       };
     }
 
+    case 'statusline://workflow': {
+      const content = await getStatuslineWorkflowResource();
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: 'application/json',
+            text: content,
+          },
+        ],
+      };
+    }
+
     default:
       throw new Error(`Unknown resource: ${uri}`);
   }
@@ -577,8 +637,8 @@ export async function runServer(): Promise<void> {
   await server.connect(transport);
 
   // Log to stderr (not stdout, which is used for MCP communication)
-  console.error('Smart Agent Workflow MCP v0.5.0 running on stdio');
-  console.error('RULES: Tests + Build MUST pass before merge. Memory persists across sessions.');
+  console.error('Smart Agent Workflow MCP v0.6.0 running on stdio');
+  console.error('RULES: Tests + Build MUST pass before merge. Context health tracking enabled.');
 }
 
 export { server };

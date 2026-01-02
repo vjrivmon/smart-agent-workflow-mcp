@@ -3,12 +3,14 @@
  *
  * This tool runs Playwright E2E tests and enforces the testing gate.
  * Tests MUST pass before any merge operation is allowed.
+ * Tracks context health (v0.6.0).
  */
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
+import { trackOperation } from '../../lib/context-health.js';
 
 const execAsync = promisify(exec);
 
@@ -43,6 +45,9 @@ export async function runE2ETests(params: RunE2ETestsParams): Promise<TestResult
     headed = false,
     project,
   } = params;
+
+  // Track operation (tests can generate lots of output)
+  await trackOperation('run_e2e_tests', 1500);
 
   // Validate worktree path exists
   if (!existsSync(worktree_path)) {

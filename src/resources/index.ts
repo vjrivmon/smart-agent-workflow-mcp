@@ -26,3 +26,8 @@ export {
   memoryKnowledgeResource,
   getMemoryKnowledgeResource,
 } from './memory-knowledge.js';
+
+export {
+  statuslineWorkflowResource,
+  getStatuslineWorkflowResource,
+} from './statusline-workflow.js';

@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-01-02
+
+### Added
+
+- **Context Health Tracking**: Anticipate context window compaction with heuristics-based health scoring
+- **Tools**: `checkpoint_context`, `get_context_health` for manual and automatic checkpointing
+- **Resource**: `statusline://workflow` - Workflow progress and health for Claude Code statusline
+- **Script**: `bin/statusline.sh` for Claude Code statusline integration
+- Auto-checkpoint when health drops below 30% with user-visible message
+- Health score formula: `100 - (ops*0.5 + tokens*0.001 + time*0.5)`
+- Session persistence in `.smart-agent/session.json`
+
+### Changed
+
+- All workflow tools now track operations for health scoring
+- `complete_feature` and `rollback_feature` trigger auto-checkpoint if health is critical
+- `start_feature` resets session health for new workflows
+
 ## [0.5.0] - 2026-01-02
 
 ### Added

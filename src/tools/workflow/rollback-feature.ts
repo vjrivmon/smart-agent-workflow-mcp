@@ -1,13 +1,15 @@
 /**
- * rollback_feature Tool - Smart Agent Workflow MCP v0.3.0
+ * rollback_feature Tool - Smart Agent Workflow MCP v0.6.0
  *
  * Rolls back a failed or unwanted feature:
  * - Aborts the worktree without merging
  * - Cleans up the branch
  * - Records the rollback reason
+ * - Auto-checkpoints context
  */
 
 import { abortWorktree } from '../../lib/git.js';
+import { trackOperation, shouldCheckpoint, getMetrics, resetSession } from '../../lib/context-health.js';
 import { saveContext } from '../memory/save-context.js';
 import {
   getWorkflowByPath,
@@ -45,6 +47,9 @@ export const rollbackFeatureDefinition = {
 export async function rollbackFeature(args: RollbackFeatureArgs): Promise<WorkflowResult> {
   const { worktree_path, reason, keep_branch = false } = args;
 
+  // Track operation
+  await trackOperation('rollback_feature', 1000);
+
   // Get workflow
   const workflow = await getWorkflowByPath(worktree_path);
 
@@ -75,11 +80,19 @@ export async function rollbackFeature(args: RollbackFeatureArgs): Promise<Workfl
 
       await clearCurrentWorkflow();
 
+      // === AUTO-CHECKPOINT (v0.6.0) ===
+      let checkpointMessage = '';
+      if (await shouldCheckpoint()) {
+        const metrics = await getMetrics();
+        await resetSession();
+        checkpointMessage = `\n[context] Auto-checkpoint saved. Health restored: ${metrics.health_score}% → 100%`;
+      }
+
       return {
         success: true,
         workflow_id: workflow.id,
         phase: 'rolled_back',
-        message: `Feature "${workflow.feature_name}" rolled back.`,
+        message: `Feature "${workflow.feature_name}" rolled back.${checkpointMessage}`,
         next_action:
           'The worktree and branch have been removed. You can start fresh with start_feature.',
       };
