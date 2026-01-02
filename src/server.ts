@@ -80,7 +80,7 @@ import {
 const server = new Server(
   {
     name: 'smart-agent-workflow-mcp',
-    version: '0.4.0',
+    version: '0.4.1',
   },
   {
     capabilities: {
@@ -488,7 +488,7 @@ export async function runServer(): Promise<void> {
   await server.connect(transport);
 
   // Log to stderr (not stdout, which is used for MCP communication)
-  console.error('Smart Agent Workflow MCP v0.4.0 running on stdio');
+  console.error('Smart Agent Workflow MCP v0.4.1 running on stdio');
   console.error('RULES: Tests + Build MUST pass before merge. Use start_feature → complete_feature for full workflow.');
 }
 

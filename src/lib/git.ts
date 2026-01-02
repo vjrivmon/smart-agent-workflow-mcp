@@ -59,6 +59,35 @@ export async function getProjectRoot(cwd?: string): Promise<string> {
 }
 
 /**
+ * Get the main repository root (resolves worktree to main repo)
+ * For worktrees, follows the .git file to find the main repo
+ */
+export async function getMainRepoRoot(cwd?: string): Promise<string> {
+  const toplevel = await getProjectRoot(cwd);
+  const gitPath = path.join(toplevel, '.git');
+
+  try {
+    const stat = await fs.stat(gitPath);
+    if (stat.isFile()) {
+      // This is a worktree - .git is a file containing path to main repo
+      const content = await fs.readFile(gitPath, 'utf-8');
+      // Format: "gitdir: /path/to/main/.git/worktrees/branch-name"
+      const match = content.match(/gitdir:\s*(.+)/);
+      if (match) {
+        const gitDir = match[1].trim();
+        // Go up from .git/worktrees/branch-name to main repo
+        const mainGitDir = path.resolve(gitDir, '..', '..', '..');
+        return mainGitDir;
+      }
+    }
+    // It's a directory, so we're in the main repo
+    return toplevel;
+  } catch {
+    return toplevel;
+  }
+}
+
+/**
  * Get the current branch name
  */
 export async function getCurrentBranch(cwd?: string): Promise<string> {
@@ -253,13 +282,14 @@ export async function abortWorktree(
     branchName = await getCurrentBranch(worktreePath);
   }
 
-  const projectRoot = await getProjectRoot(worktreePath);
+  // Get main repo root BEFORE removing worktree (important!)
+  const mainRepoRoot = await getMainRepoRoot(worktreePath);
 
-  // Remove the worktree (no need to checkout main first)
-  await gitExec(`worktree remove "${worktreePath}" --force`, projectRoot);
+  // Remove the worktree
+  await gitExec(`worktree remove "${worktreePath}" --force`, mainRepoRoot);
 
-  // Delete the branch
-  await gitExec(`branch -D ${branchName}`, projectRoot).catch(() => {});
+  // Delete the branch (from main repo, not worktree)
+  await gitExec(`branch -D ${branchName}`, mainRepoRoot);
 
   if (reason) {
     console.error(`[aborted]: ${reason}`);

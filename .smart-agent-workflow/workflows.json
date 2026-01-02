@@ -110,5 +110,117 @@
     ],
     "created_at": "2026-01-02T00:19:27.760Z",
     "updated_at": "2026-01-02T00:19:27.760Z"
+  },
+  {
+    "id": "e94c6a27-f24a-4c2c-9c76-f2fbfb887788",
+    "feature_name": "e2e-validation",
+    "feature_type": "feature",
+    "description": "Full E2E validation test",
+    "worktree_path": "/home/vicente/RoadToDevOps/worktrees/smart-agent-e2e-validation-2026-01-02T00-38-47",
+    "branch_name": "smart-agent-e2e-validation-2026-01-02T00-38-47",
+    "base_branch": "main",
+    "current_phase": "planning",
+    "steps": [
+      {
+        "name": "Create Worktree",
+        "phase": "planning",
+        "status": "completed",
+        "completed_at": "2026-01-02T00:38:47.812Z"
+      },
+      {
+        "name": "Setup Environment",
+        "phase": "planning",
+        "status": "in_progress",
+        "started_at": "2026-01-02T00:38:47.812Z"
+      },
+      {
+        "name": "Implement Feature",
+        "phase": "implementing",
+        "status": "pending"
+      },
+      {
+        "name": "Run E2E Tests",
+        "phase": "testing",
+        "status": "pending"
+      },
+      {
+        "name": "Verify Build",
+        "phase": "building",
+        "status": "pending"
+      },
+      {
+        "name": "Merge to Main",
+        "phase": "merging",
+        "status": "pending"
+      },
+      {
+        "name": "Update Documentation",
+        "phase": "documenting",
+        "status": "pending"
+      },
+      {
+        "name": "Cleanup Worktree",
+        "phase": "completed",
+        "status": "pending"
+      }
+    ],
+    "created_at": "2026-01-02T00:38:47.812Z",
+    "updated_at": "2026-01-02T00:38:47.812Z"
+  },
+  {
+    "id": "2baec5ca-736e-4036-b520-35b8ff972e1c",
+    "feature_name": "cleanup-test",
+    "feature_type": "bugfix",
+    "description": "Testing branch cleanup",
+    "worktree_path": "/home/vicente/RoadToDevOps/worktrees/smart-agent-cleanup-test-2026-01-02T00-41-33",
+    "branch_name": "smart-agent-cleanup-test-2026-01-02T00-41-33",
+    "base_branch": "main",
+    "current_phase": "planning",
+    "steps": [
+      {
+        "name": "Create Worktree",
+        "phase": "planning",
+        "status": "completed",
+        "completed_at": "2026-01-02T00:41:34.006Z"
+      },
+      {
+        "name": "Setup Environment",
+        "phase": "planning",
+        "status": "in_progress",
+        "started_at": "2026-01-02T00:41:34.006Z"
+      },
+      {
+        "name": "Implement Feature",
+        "phase": "implementing",
+        "status": "pending"
+      },
+      {
+        "name": "Run E2E Tests",
+        "phase": "testing",
+        "status": "pending"
+      },
+      {
+        "name": "Verify Build",
+        "phase": "building",
+        "status": "pending"
+      },
+      {
+        "name": "Merge to Main",
+        "phase": "merging",
+        "status": "pending"
+      },
+      {
+        "name": "Update Documentation",
+        "phase": "documenting",
+        "status": "pending"
+      },
+      {
+        "name": "Cleanup Worktree",
+        "phase": "completed",
+        "status": "pending"
+      }
+    ],
+    "created_at": "2026-01-02T00:41:34.006Z",
+    "updated_at": "2026-01-02T00:41:34.006Z"
   }
 ]

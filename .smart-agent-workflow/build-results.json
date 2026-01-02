@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "duration": 1038,
+  "output": "\n> smart-agent-workflow-mcp@0.4.0 build\n> tsc\n\n",
+  "script": "build",
+  "exit_code": 0,
+  "timestamp": "2026-01-02T00:36:18.757Z",
+  "warnings": [],
+  "errors": []
+}
