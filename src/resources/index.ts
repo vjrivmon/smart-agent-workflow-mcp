@@ -16,3 +16,8 @@ export {
   workflowCurrentResource,
   getWorkflowCurrentResource,
 } from './workflow-current.js';
+
+export {
+  projectDocsResource,
+  getProjectDocsResource,
+} from './project-docs.js';

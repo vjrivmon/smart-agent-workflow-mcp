@@ -55,6 +55,16 @@ import {
   getWorkflowStatusDefinition,
 } from './tools/workflow/index.js';
 
+// Documentation tools (v0.4.0)
+import {
+  updateDocumentation,
+  updateDocumentationDefinition,
+  generateCompletionReport,
+  generateCompletionReportDefinition,
+  syncChangelog,
+  syncChangelogDefinition,
+} from './tools/documentation/index.js';
+
 // Resources
 import {
   worktreeStatusResource,
@@ -63,12 +73,14 @@ import {
   getTestResultsResource,
   workflowCurrentResource,
   getWorkflowCurrentResource,
+  projectDocsResource,
+  getProjectDocsResource,
 } from './resources/index.js';
 
 const server = new Server(
   {
     name: 'smart-agent-workflow-mcp',
-    version: '0.3.1',
+    version: '0.4.0',
   },
   {
     capabilities: {
@@ -97,6 +109,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       completeFeatureDefinition,
       rollbackFeatureDefinition,
       getWorkflowStatusDefinition,
+      // Documentation (v0.4.0)
+      updateDocumentationDefinition,
+      generateCompletionReportDefinition,
+      syncChangelogDefinition,
     ],
   };
 });
@@ -318,6 +334,64 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      // === DOCUMENTATION TOOLS (v0.4.0) ===
+      case 'update_documentation': {
+        const result = await updateDocumentation({
+          doc_path: args?.doc_path as string | undefined,
+          workflow_id: args?.workflow_id as string | undefined,
+          section: args?.section as string | undefined,
+          content: args?.content as string | undefined,
+          mode: args?.mode as 'append' | 'replace' | 'prepend' | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'generate_completion_report': {
+        const result = await generateCompletionReport({
+          workflow_id: args?.workflow_id as string | undefined,
+          output_path: args?.output_path as string | undefined,
+          include_tests: args?.include_tests as boolean | undefined,
+          include_diff: args?.include_diff as boolean | undefined,
+          include_timing: args?.include_timing as boolean | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'sync_changelog': {
+        const result = await syncChangelog({
+          changelog_path: args?.changelog_path as string | undefined,
+          version: args?.version as string | undefined,
+          category: args?.category as 'added' | 'changed' | 'fixed' | 'removed' | 'deprecated' | 'security' | undefined,
+          entry: args?.entry as string | undefined,
+          workflow_id: args?.workflow_id as string | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -338,7 +412,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // List available resources
 server.setRequestHandler(ListResourcesRequestSchema, async () => {
   return {
-    resources: [worktreeStatusResource, testResultsResource, workflowCurrentResource],
+    resources: [
+      worktreeStatusResource,
+      testResultsResource,
+      workflowCurrentResource,
+      projectDocsResource,
+    ],
   };
 });
 
@@ -386,6 +465,19 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
       };
     }
 
+    case 'docs://project': {
+      const content = await getProjectDocsResource();
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: 'application/json',
+            text: content,
+          },
+        ],
+      };
+    }
+
     default:
       throw new Error(`Unknown resource: ${uri}`);
   }
@@ -396,7 +488,7 @@ export async function runServer(): Promise<void> {
   await server.connect(transport);
 
   // Log to stderr (not stdout, which is used for MCP communication)
-  console.error('Smart Agent Workflow MCP v0.3.1 running on stdio');
+  console.error('Smart Agent Workflow MCP v0.4.0 running on stdio');
   console.error('RULES: Tests + Build MUST pass before merge. Use start_feature → complete_feature for full workflow.');
 }
 

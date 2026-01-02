@@ -143,6 +143,29 @@ export async function getWorkflowByPath(worktreePath: string, cwd?: string): Pro
 }
 
 /**
+ * Get workflow by ID (searches current and history)
+ */
+export async function getWorkflowById(workflowId: string, cwd?: string): Promise<WorkflowState | null> {
+  const current = await getCurrentWorkflow(cwd);
+  if (current && current.id === workflowId) {
+    return current;
+  }
+
+  // Search in history
+  try {
+    const workflowDir = await getWorkflowDir(cwd);
+    const content = await fs.readFile(
+      path.join(workflowDir, WORKFLOW_FILE),
+      'utf-8'
+    );
+    const history: WorkflowState[] = JSON.parse(content);
+    return history.find((w) => w.id === workflowId) || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Transition workflow to a new phase
  */
 export async function transitionPhase(
