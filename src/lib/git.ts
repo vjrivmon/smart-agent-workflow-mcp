@@ -255,12 +255,7 @@ export async function abortWorktree(
 
   const projectRoot = await getProjectRoot(worktreePath);
 
-  // Switch to main in the project root first
-  await gitExec('checkout main', projectRoot).catch(() => {
-    return gitExec('checkout master', projectRoot);
-  });
-
-  // Remove the worktree
+  // Remove the worktree (no need to checkout main first)
   await gitExec(`worktree remove "${worktreePath}" --force`, projectRoot);
 
   // Delete the branch
