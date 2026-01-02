@@ -13,6 +13,7 @@
 import { cleanupWorktree } from '../../lib/git.js';
 import { runE2ETests } from '../testing/run-tests.js';
 import { verifyBuild } from '../testing/verify-build.js';
+import { saveContext } from '../memory/save-context.js';
 import {
   getCurrentWorkflow,
   getWorkflowByPath,
@@ -188,6 +189,23 @@ export async function completeFeature(args: CompleteFeatureArgs): Promise<Workfl
     });
 
     workflow = await transitionPhase(workflow.id, 'completed');
+
+    // === AUTO-SAVE CONTEXT (v0.5.0) ===
+    try {
+      await saveContext({
+        workflow_id: workflow.id,
+        learnings: [
+          `Successfully completed feature: ${workflow.feature_name}`,
+          `Tests passed: ${workflow.test_results?.passed || 0}`,
+          `Build duration: ${workflow.build_results?.duration_ms || 0}ms`,
+        ],
+        tags: ['success', 'completed', workflow.feature_type || 'feature'],
+        notes: `Feature completed and merged to main. Commit: ${cleanupResult.commit}`,
+      });
+    } catch (memoryError) {
+      // Memory save failure should not fail the workflow
+      console.error('[memory] Failed to save context:', memoryError);
+    }
 
     // Clear current workflow
     await clearCurrentWorkflow();

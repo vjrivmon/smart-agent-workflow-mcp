@@ -65,6 +65,16 @@ import {
   syncChangelogDefinition,
 } from './tools/documentation/index.js';
 
+// Memory tools (v0.5.0)
+import {
+  saveContext,
+  saveContextDefinition,
+  restoreContext,
+  restoreContextDefinition,
+  getMemory,
+  getMemoryDefinition,
+} from './tools/memory/index.js';
+
 // Resources
 import {
   worktreeStatusResource,
@@ -75,12 +85,14 @@ import {
   getWorkflowCurrentResource,
   projectDocsResource,
   getProjectDocsResource,
+  memoryKnowledgeResource,
+  getMemoryKnowledgeResource,
 } from './resources/index.js';
 
 const server = new Server(
   {
     name: 'smart-agent-workflow-mcp',
-    version: '0.4.1',
+    version: '0.5.0',
   },
   {
     capabilities: {
@@ -113,6 +125,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       updateDocumentationDefinition,
       generateCompletionReportDefinition,
       syncChangelogDefinition,
+      // Memory (v0.5.0)
+      saveContextDefinition,
+      restoreContextDefinition,
+      getMemoryDefinition,
     ],
   };
 });
@@ -392,6 +408,65 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      // === MEMORY TOOLS (v0.5.0) ===
+      case 'save_context': {
+        const result = await saveContext({
+          workflow_id: args?.workflow_id as string | undefined,
+          decisions: args?.decisions as string[] | undefined,
+          learnings: args?.learnings as string[] | undefined,
+          tags: args?.tags as string[] | undefined,
+          notes: args?.notes as string | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'restore_context': {
+        const result = await restoreContext({
+          workflow_id: args?.workflow_id as string | undefined,
+          feature_name: args?.feature_name as string | undefined,
+          include_related: args?.include_related as boolean | undefined,
+          limit: args?.limit as number | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'get_memory': {
+        const result = await getMemory({
+          query: args?.query as string | undefined,
+          type: args?.type as 'decision' | 'learning' | 'context' | 'file_change' | 'error' | 'success' | undefined,
+          tags: args?.tags as string[] | undefined,
+          workflow_id: args?.workflow_id as string | undefined,
+          file_path: args?.file_path as string | undefined,
+          limit: args?.limit as number | undefined,
+          min_importance: args?.min_importance as number | undefined,
+        });
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -417,6 +492,7 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => {
       testResultsResource,
       workflowCurrentResource,
       projectDocsResource,
+      memoryKnowledgeResource,
     ],
   };
 });
@@ -478,6 +554,19 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
       };
     }
 
+    case 'memory://knowledge': {
+      const content = await getMemoryKnowledgeResource();
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: 'application/json',
+            text: content,
+          },
+        ],
+      };
+    }
+
     default:
       throw new Error(`Unknown resource: ${uri}`);
   }
@@ -488,8 +577,8 @@ export async function runServer(): Promise<void> {
   await server.connect(transport);
 
   // Log to stderr (not stdout, which is used for MCP communication)
-  console.error('Smart Agent Workflow MCP v0.4.1 running on stdio');
-  console.error('RULES: Tests + Build MUST pass before merge. Use start_feature → complete_feature for full workflow.');
+  console.error('Smart Agent Workflow MCP v0.5.0 running on stdio');
+  console.error('RULES: Tests + Build MUST pass before merge. Memory persists across sessions.');
 }
 
 export { server };

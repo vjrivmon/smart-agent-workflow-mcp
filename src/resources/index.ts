@@ -21,3 +21,8 @@ export {
   projectDocsResource,
   getProjectDocsResource,
 } from './project-docs.js';
+
+export {
+  memoryKnowledgeResource,
+  getMemoryKnowledgeResource,
+} from './memory-knowledge.js';

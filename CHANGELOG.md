@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-01-02
+
+### Added
+
+- **Memory persistence**: `save_context`, `restore_context`, `get_memory` tools
+- **Resource**: `memory://knowledge` - Knowledge graph overview with insights
+- Auto-save context on `complete_feature` (learnings, test results, build info)
+- Auto-save context on `rollback_feature` (rollback reason, phase at rollback)
+- Memory entries with importance scoring (1-10) for prioritization
+- Fuzzy search by feature name in `restore_context`
+- Memory statistics and insights generation
+
+### Changed
+
+- Workflow completion now automatically persists context to memory
+- Rollback now records error context for future learning
+
 ## [0.4.1] - 2026-01-02
 
 ### Fixed

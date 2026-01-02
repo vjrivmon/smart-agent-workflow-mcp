@@ -8,6 +8,7 @@
  */
 
 import { abortWorktree } from '../../lib/git.js';
+import { saveContext } from '../memory/save-context.js';
 import {
   getWorkflowByPath,
   rollbackWorkflow,
@@ -54,6 +55,24 @@ export async function rollbackFeature(args: RollbackFeatureArgs): Promise<Workfl
     // Update workflow state if exists
     if (workflow) {
       await rollbackWorkflow(workflow.id, reason);
+
+      // === AUTO-SAVE CONTEXT (v0.5.0) ===
+      try {
+        await saveContext({
+          workflow_id: workflow.id,
+          learnings: [
+            `Rolled back feature: ${workflow.feature_name}`,
+            `Reason: ${reason}`,
+            `Phase at rollback: ${workflow.current_phase}`,
+          ],
+          tags: ['rollback', 'error', workflow.feature_type || 'feature'],
+          notes: `Feature was rolled back. Reason: ${reason}`,
+        });
+      } catch (memoryError) {
+        // Memory save failure should not fail the rollback
+        console.error('[memory] Failed to save context:', memoryError);
+      }
+
       await clearCurrentWorkflow();
 
       return {
