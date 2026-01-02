@@ -71,6 +71,15 @@ export async function completeFeature(args: CompleteFeatureArgs): Promise<Workfl
   }
 
   try {
+    // === PHASE 0: AUTO-TRANSITION (if needed) ===
+    // Handle automatic phase transitions from planning/implementing
+    if (workflow.current_phase === 'planning') {
+      await updateStep(workflow.id, 'Setup Environment', 'completed', {
+        output: 'Environment ready',
+      });
+      workflow = await transitionPhase(workflow.id, 'implementing');
+    }
+
     // === PHASE 1: TESTING ===
     if (!skip_tests) {
       await updateStep(workflow.id, 'Implement Feature', 'completed', {

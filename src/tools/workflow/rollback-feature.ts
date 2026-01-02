@@ -12,6 +12,7 @@ import { abortWorktree } from '../../lib/git.js';
 import { trackOperation, shouldCheckpoint, getMetrics, resetSession } from '../../lib/context-health.js';
 import { saveContext } from '../memory/save-context.js';
 import {
+  getCurrentWorkflow,
   getWorkflowByPath,
   rollbackWorkflow,
   clearCurrentWorkflow,
@@ -40,15 +41,36 @@ export const rollbackFeatureDefinition = {
         description: 'Keep the branch for debugging (default: delete)',
       },
     },
-    required: ['worktree_path', 'reason'],
+    required: ['reason'],  // worktree_path is optional - falls back to current workflow
   },
 };
 
 export async function rollbackFeature(args: RollbackFeatureArgs): Promise<WorkflowResult> {
-  const { worktree_path, reason, keep_branch = false } = args;
+  const { reason, keep_branch = false } = args;
+  let { worktree_path } = args;
 
   // Track operation
   await trackOperation('rollback_feature', 1000);
+
+  // If no worktree_path provided, try to get from current workflow
+  if (!worktree_path) {
+    const currentWorkflow = await getCurrentWorkflow();
+    if (currentWorkflow) {
+      worktree_path = currentWorkflow.worktree_path;
+    }
+  }
+
+  // Validate we have a path
+  if (!worktree_path) {
+    return {
+      success: false,
+      workflow_id: '',
+      phase: 'failed',
+      message: 'No worktree path provided and no active workflow found.',
+      error: 'worktree_path is required',
+      next_action: 'Provide a worktree_path or start a workflow first.',
+    };
+  }
 
   // Get workflow
   const workflow = await getWorkflowByPath(worktree_path);

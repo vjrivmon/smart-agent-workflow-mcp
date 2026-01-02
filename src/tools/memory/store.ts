@@ -56,7 +56,19 @@ export async function loadMemoryStore(cwd?: string): Promise<MemoryStore> {
     const content = await fs.readFile(memoryPath, 'utf-8');
     const store: MemoryStore = JSON.parse(content);
 
-    // Future: handle version migrations here
+    // Ensure all required fields exist (migration/validation for partial files)
+    if (!store.entries) store.entries = [];
+    if (!store.contexts) store.contexts = [];
+    if (!store.stats) {
+      store.stats = {
+        total_entries: 0,
+        total_contexts: 0,
+        by_type: {},
+      };
+    }
+    if (!store.version) store.version = CURRENT_VERSION;
+    if (!store.updated_at) store.updated_at = new Date().toISOString();
+
     return store;
   } catch {
     // File doesn't exist or is invalid, return empty store

@@ -10,7 +10,7 @@
 
 import { createWorktree } from '../../lib/git.js';
 import { trackOperation, resetSession } from '../../lib/context-health.js';
-import { createWorkflow } from './state-machine.js';
+import { createWorkflow, getCurrentWorkflow } from './state-machine.js';
 import type { StartFeatureArgs, WorkflowResult, FeatureType } from './types.js';
 
 export const startFeatureDefinition = {
@@ -54,6 +54,22 @@ export async function startFeature(args: StartFeatureArgs): Promise<WorkflowResu
   } = args;
 
   try {
+    // Check for existing active workflow
+    const existingWorkflow = await getCurrentWorkflow();
+    if (existingWorkflow &&
+        existingWorkflow.current_phase !== 'completed' &&
+        existingWorkflow.current_phase !== 'rolled_back') {
+      return {
+        success: false,
+        workflow_id: existingWorkflow.id,
+        phase: existingWorkflow.current_phase,
+        message: `Another workflow is already active: "${existingWorkflow.feature_name}" (${existingWorkflow.current_phase})`,
+        error: 'Active workflow exists',
+        worktree_path: existingWorkflow.worktree_path,
+        next_action: 'Complete or rollback the current workflow before starting a new one.',
+      };
+    }
+
     // Track operation and reset session for new workflow
     await trackOperation('start_feature', 500);
     await resetSession();
